@@ -68,8 +68,8 @@
 		
 <div class="row">
 <div style="height: 30px">
-  <div id="item_value" class="col-md-4 dc-chart"  data-step="1" data-intro="Click on this chart to filter values by item group." data-position="right" style="text-align:left"><h5>NFI Values by Item Group (USD) <a class="reset" href="javascript:value_chart.filterAll();dc.redrawAll();"style="display: none;">reset</a></h5></div>
-    <div id="itm_qty" class="col-md-4 dc-chart" style="text-align:left"  data-step="2" data-intro="Click on this chart to filter item quantities by group." data-position="right" ><h5>NFI Quantities <a class="reset" href="javascript:itm_qty_chart.filterAll();dc.redrawAll();"style="display: none;">reset</a></h5></div>
+  <div id="item_value" class="col-md-4 dc-chart"  data-step="1" data-intro="Click on this chart to filter values by item group. The chart scale changes dynamically." data-position="right" style="text-align:left"><h5>NFI Values by Item Group (USD) <a class="reset" href="javascript:value_chart.filterAll();dc.redrawAll();"style="display: none;">reset</a></h5></div>
+    <div id="itm_qty" class="col-md-4 dc-chart" style="text-align:left"  data-step="2" data-intro="Click on this chart to filter item quantities by group. The chart scale changes dynamically." data-position="right" ><h5>NFI Quantities <a class="reset" href="javascript:itm_qty_chart.filterAll();dc.redrawAll();"style="display: none;">reset</a></h5></div>
   <div id="proc_total_status" class="col-md-4 dc-chart"  data-step="3" data-intro="Click on this pie chart to filter items by status."  data-position="left" style="text-align:left" ><h5>NFI Value by Status (USD) <a class="reset" href="javascript:proc_total_status_chart.filterAll();dc.redrawAll();"style="display: none;">reset</a></h5></div>
 
 
@@ -89,7 +89,7 @@
                 <div id="" style="text-align:left"><h4><br></h4></div>
             </td>
         </tr>
-        <div id="proc_trend" class="col-md-12 dc-chart"  data-step="5" data-intro="Select a timeframe to restrict activities to that interval only ."  data-position="top" style="text-align:center" ><h5>Supply & Procurement Trend <a class="reset" href="javascript:proc_trend_chart.filterAll();dc.redrawAll();"style="display: none;">reset</a></h5></div>
+        <div id="proc_trend" class="col-md-12 dc-chart"  data-step="5" data-intro="Select a timeframe to restrict activities to that interval only."  data-position="top" style="text-align:center" ><h5>Supply & Procurement Trend <a class="reset" href="javascript:proc_trend_chart.filterAll();dc.redrawAll();"style="display: none;">reset</a></h5></div>
     </table>
 
   </div>
@@ -160,19 +160,25 @@
       });
 
       var parseDate = d3.time.format("%Y-%m-%d").parse;
+      var parseDate_week = d3.time.format("%Y-%U").parse;
+      var parseDate2 = d3.time.format("%m/%d").parse;
       csv_data.forEach(function(d) {
               d.date = parseDate(d.Date);
+              d.date2 = parseDate2(d.Date);
       });
       //var recordsx = crossfilter(csv_data);
 
       var dims={};
       var groups ={};
 
-    var   datedimension = cf.dimension(function(d) {return (d.date);});
+    var   datedimension = cf.dimension(function(d) {
+       return (d.date);});
     datedimension.filter("");
       cf.remove();
       datedimension.filterAll();
      var  value_by_date = datedimension.group().reduceSum(function(d) {return(d.Value);});
+
+
 
 
       var minDate = datedimension.bottom(1)[0].date;
@@ -270,7 +276,7 @@
       proc_total_target_chart.width(300).height(150)
               .dimension(cf.targetpop)
               .group( targetpop_by_total)
-              .elasticX(true)
+              .elasticX(false)
               .renderLabel(true)
               .renderTitle(false)
               .on("filtered", getFiltersValues)
@@ -294,17 +300,17 @@
                       .renderTitle(true)
                       .x(d3.time.scale().domain([minDate,maxDate]))
                       //.x(d3.time.scale().domain(d3.extent(data, function(d) { return d.Date; })))
-                      .xUnits(d3.time.days)
+                      .xUnits(d3.time.month)
                       .on("filtered", getFiltersValues)
                       .brushOn(true)
                    //   .mouseZoomable(true)
                       .gap(75)
-                      .elasticY(true)
+                      .elasticY(false)
                       //.elasticX(true)
                       .margins({left: 70 ,top: 10, bottom: 30, right: 50})
                         .yAxis().ticks(7).tickFormat(d3.format("$,s"));
 
-      $(document).ready(function() {
+      /* $(document).ready(function() {
           $.ajax({
               type: "GET",
               url: "data/Location.csv",
@@ -316,9 +322,8 @@
 
       function displayData(Text) {
           data = $.csv.toObjects(Text);
-      //    alert(Text);
 
-          var map = L.map('map', { zoomControl: false }).setView([33.35, 43.8], 6);
+         var map = L.map('map', { zoomControl: false }).setView([33.35, 43.8], 6);
           L.tileLayer('http://{s}.tile.thunderforest.com/transport/{z}/{x}/{y}.png', {
               attribution: '&copy; <a href="http://www.opencyclemap.org">OpenCycleMap</a>, &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>'
           }).addTo(map);
@@ -380,7 +385,7 @@
           }).addTo(map);
           })
           });
-      }
+      }*/
          initFilters();
       dc.renderAll();
       d3.selectAll("g.row").call(rowTip);
