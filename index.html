@@ -5,10 +5,10 @@
 <meta content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0" name="viewport">
 <meta name="author" content="Adam Toth">
 
-<meta property="og:title" content="2014 Iraq NFI Supply & Procurement">
+<meta property="og:title" content="2014 Iraq NFI Pipeline">
 <meta property="og:type" content="article">
-<meta property="og:site_name" content="2014 Iraq NFI Supply & Procurement">
-<meta property="og:description" content="2014 Iraq NFI Supply & Procurement">
+<meta property="og:site_name" content="2014 Iraq NFI Pipeline">
+<meta property="og:description" content="2014 Iraq NFI Pipeline">
 
 
 
@@ -57,7 +57,7 @@
     </div>
 
     <div style="display: block; text-align:center" class="container" id="dashboard">
-        <h1><strong>2014 Iraq NFI Supply & Procurement</strong></h1>
+        <h1><strong>2014 Iraq NFI Pipeline</strong></h1>
         <div style="text-align:center" class="col-xs-12"><h5>Click on any of those graphs below to filter and slice the data. More Information on Iraq <a href="http://data.unhcr.org/syrianrefugees/country.php?id=103" target="_blank">here</a>.</h5></div>
 
     <div class="row">
@@ -89,7 +89,7 @@
                 <div id="" style="text-align:left"><h4><br></h4></div>
             </td>
         </tr>
-        <div id="proc_trend" class="col-md-12 dc-chart"  data-step="5" data-intro="Select a timeframe to restrict activities to that interval only."  data-position="top" style="text-align:center" ><h5>Supply & Procurement Trend <a class="reset" href="javascript:proc_trend_chart.filterAll();dc.redrawAll();"style="display: none;">reset</a></h5></div>
+        <div id="proc_trend" class="col-md-12 dc-chart"  data-step="5" data-intro="Select a timeframe to restrict activities to that interval only."  data-position="top" style="text-align:center" ><h5>Timeline <a class="reset" href="javascript:proc_trend_chart.filterAll();dc.redrawAll();"style="display: none;">reset</a></h5></div>
     </table>
 
   </div>
@@ -250,7 +250,6 @@
               .attr('class', 'd3-tip')
               .offset([-10, 0])
               .html(function (d) { return "<span style='color: #f0027f'>" +  d.key + "</span> : "  + numberFormat(d.value) + " USD"; });
-
 
       value_chart.width(400).height(400)
                 .dimension(cf.item)
