@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0" name="viewport">
+<meta name="author" content="Adam Toth">
+
+<meta property="og:title" content="2014 Iraq NFI Supply & Procurement">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="2014 Iraq NFI Supply & Procurement">
+<meta property="og:description" content="2014 Iraq NFI Supply & Procurement">
+
+
+
+    <title>2014 Iraq NFI Supply & Procurement</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+    <!-- UNHCR Logo -->
+    <div style="position: relative;float: right; top: -18px" >
+        <img src="images/unhcr_logo.png" >
+    </div>
+    <!-- Styles -->
+    <link rel="stylesheet" type="text/css" href="css/bootstrap.css">
+    <link rel="stylesheet" type="text/css" href="css/dc.css">
+    <link rel="stylesheet" type="text/css" href="css/leaflet.css" />
+    <link rel="stylesheet" type="text/css" href="css/introjs.css">
+    <link rel="stylesheet" type="text/css" href="css/introjs-nazanin.css">
+    <link rel="stylesheet" type="text/css" href="css/iraq_dashboard.css">
+
+    <!-- JS -->
+
+    <script type="text/javascript" src="js/jquery.js"></script>
+    <script type="text/javascript" src="js/intro.js"></script>
+    <script type="text/javascript" src="js/d3_002.js"></script>
+    <script type="text/javascript" src="js/crossfilter.js"></script>
+    <script type="text/javascript" src="js/dc.js"></script>
+    <script type="text/javascript" src="js/d3.js"></script>
+    <script type="text/javascript" src="js/d3.min.js"></script>
+    <script type="text/javascript" src="js/d3.tip.min.js"></script>
+    <script type="text/javascript" t src="js/leaflet.js"></script>
+    <script type="text/javascript" src="js/leaflet-heat.js"></script>
+    <script type="text/javascript" src="js/jquery.csv-0.71.min.js"></script>
+    <script type="text/javascript" src="js/underscore-min.js"></script>
+
+    <!-- Favicon -->
+    <link href="images/favicon.ico" rel="icon" type="image/x-icon">
+
+
+  </head>
+  <body>
+
+  
+      <div style="display: none;" class="col-sm-4 col-md-offset4" id="loading">
+        <h1>Patience: Loading the data... (~a few MB)</h1><small>This webpage does not work on IE8 or older... Upgrade your browser if needed</small>
+    </div>
+
+    <div style="display: block; text-align:center" class="container" id="dashboard">
+        <h1><strong>2014 Iraq NFI Supply & Procurement</strong></h1>
+        <div style="text-align:center" class="col-xs-12"><h5>Click on any of those graphs below to filter and slice the data. More Information on Iraq <a href="http://data.unhcr.org/syrianrefugees/country.php?id=103" target="_blank">here</a>.</h5></div>
+
+    <div class="row">
+        <div style="text-align:left;float: left" class="col-md-8" data-position="right"><a class="reset btn btn-primary btn-sm"  data-step="6" data-intro="Click this button to reset all values or click 'reset' next to the title of a filtered chart." data-position="right"  id="reset" href="javascript:dc.filterAll();dc.redrawAll();">Reset All</a></div>
+        <div style="text-align:right;float: right" class="col-md-4"><a class="btn btn btn-success" href="javascript:void(0);" onclick="javascript:introJs().start();">Tutorial</a>
+        </div>
+    </div>
+		
+<div class="row">
+<div style="height: 30px">
+  <div id="item_value" class="col-md-4 dc-chart"  data-step="1" data-intro="Click on this chart to filter values by item group." data-position="right" style="text-align:left"><h5>NFI Values by Item Group (USD) <a class="reset" href="javascript:value_chart.filterAll();dc.redrawAll();"style="display: none;">reset</a></h5></div>
+    <div id="itm_qty" class="col-md-4 dc-chart" style="text-align:left"  data-step="2" data-intro="Click on this chart to filter item quantities by group." data-position="right" ><h5>NFI Quantities <a class="reset" href="javascript:itm_qty_chart.filterAll();dc.redrawAll();"style="display: none;">reset</a></h5></div>
+  <div id="proc_total_status" class="col-md-4 dc-chart"  data-step="3" data-intro="Click on this pie chart to filter items by status."  data-position="left" style="text-align:left" ><h5>NFI Value by Status (USD) <a class="reset" href="javascript:proc_total_status_chart.filterAll();dc.redrawAll();"style="display: none;">reset</a></h5></div>
+
+
+
+</div>
+
+<div class="row">
+    <div id="proc_total_target" class="col-md-4 dc-chart"  data-step="4" data-intro="Click on this chart to filter items/activities by the targeted population."  data-position="left"  style="text-align:left" ><h5>NFI Value by Target Population (USD) <a class="reset" href="javascript:proc_total_target_chart.filterAll();dc.redrawAll();"style="display: none;">reset</a></h5></div>
+
+<div class=>
+    <table>
+        <tr>
+
+        </tr>
+        <tr>
+            <td>
+                <div id="" style="text-align:left"><h4><br></h4></div>
+            </td>
+        </tr>
+        <div id="proc_trend" class="col-md-12 dc-chart"  data-step="5" data-intro="Select a timeframe to restrict activities to that interval only ."  data-position="top" style="text-align:center" ><h5>Supply & Procurement Trend <a class="reset" href="javascript:proc_trend_chart.filterAll();dc.redrawAll();"style="display: none;">reset</a></h5></div>
+    </table>
+
+  </div>
+  
+
+  <script>
+
+
+  var value_chart = dc.rowChart("#item_value");
+  var proc_total_status_chart = dc.pieChart("#proc_total_status");
+  var proc_total_target_chart = dc.rowChart("#proc_total_target");
+  var itm_qty_chart = dc.rowChart("#itm_qty");
+  //var proc_trend_chart = dc.barChart("#proc_trend");
+  var proc_trend_chart = dc.barChart("#proc_trend");
+  //var	parseDate = d3.time.format("%Y-%m").parse;
+  //var map_chart = dc.geoChoroplethChart("#mapchart");
+
+  d3.csv("data/Dataset.csv", function(csv_data) {
+
+     var numberFormat = d3.format(",f");
+      var dateFormat = d3.time.format("%Y-%m-%d");
+      var monthNameFormat = d3.time.format("%B");
+      var monthNumberFormat = d3.time.format("%-m");
+      var cf = crossfilter(csv_data);
+
+      //  var lat = csv_data.map( function(d){
+      //      return d.Latitude
+      //  });
+
+      cf.targetpop = cf.dimension(function (d) {
+          return d.Target_Population;
+      });
+
+      cf.item = cf.dimension(function (d) {
+          return d.Item;
+      });
+      cf.source = cf.dimension(function (d) {
+          return d.Source;
+      });
+      cf.don_country = cf.dimension(function (d) {
+          return d.don_country;
+      });
+      cf.status = cf.dimension(function (d) {
+          return d.Status;
+      });
+
+      var targetpop = cf.targetpop.group();
+      // var date = cf.date.group();
+      var item = cf.item.group();
+      var source = cf.source.group();
+      var don_country = cf.source.group();
+      var status = cf.source.group();
+
+      var all = cf.groupAll();
+
+      var item_total_quantity = cf.item.group().reduceSum(function (d) {
+          return d.Quantity;
+      });
+      var status_by_total = cf.status.group().reduceSum(function (d) {
+          return d.Value;
+      });
+      var item_total_value = cf.item.group().reduceSum(function (d) {
+          return d.Value;
+
+      });
+      var targetpop_by_total = cf.targetpop.group().reduceSum(function (d) {
+          return d.Value;
+      });
+
+      var parseDate = d3.time.format("%Y-%m-%d").parse;
+      csv_data.forEach(function(d) {
+              d.date = parseDate(d.Date);
+      });
+      //var recordsx = crossfilter(csv_data);
+
+      var dims={};
+      var groups ={};
+
+    var   datedimension = cf.dimension(function(d) {return (d.date);});
+    datedimension.filter("");
+      cf.remove();
+      datedimension.filterAll();
+     var  value_by_date = datedimension.group().reduceSum(function(d) {return(d.Value);});
+
+
+      var minDate = datedimension.bottom(1)[0].date;
+      var maxDate = dateFormat.parse("2014-12-31");
+    //  var maxDate = datedimension.top(1)[0].date;
+     // console.log(maxDate);
+
+      // Implement bookmarking chart filters status
+      // Serializing filters values in URL
+      function getFiltersValues() {
+          var filters = [
+              { name: 'value', value: value_chart.filters()},
+              { name: 'proc', value: proc_total_status_chart.filters()},
+              { name: 'proc2', value: proc_total_target_chart.filters()},
+              { name: 'itm_qty', value: itm_qty_chart.filters()},
+             // { name: 'proc_trend', value: proc_trend_chart.filters()}
+          ];
+
+          var recursiveEncoded = $.param(filters);
+          location.hash = recursiveEncoded;
+      }
+
+      // Init chart filters
+      {
+
+          function initFilters() {
+              // Get hash values
+              var parseHash = /^#sector=([A-Za-z0-9,_\-\/\s]*)&status=([A-Za-z0-9,_\-\/\s]*)&org=([A-Za-z0-9,_\-\/\s]*)&map=([A-Za-z0-9,_\-\/\s]*)$/;
+              var parsed = parseHash.exec(decodeURIComponent(location.hash));
+
+              function filter(chart, rank) {  // for instance chart = sector_chart and rank in URL hash = 1
+                  // sector chart
+                  if (parsed[rank] == "") {
+                      chart.filter(null);
+                  }
+                  else {
+                      var filterValues = parsed[rank].split(",");
+                      for (var i = 0; i < filterValues.length; i++) {
+                          chart.filter(filterValues[i]);
+                      }
+                  }
+              }
+
+              if (parsed) {
+                  filter(value_chart, 1);
+                  filter(proc_chart, 2);
+                  filter(itm_qty_chart, 3);
+                  filter(proc_per_itm_chart, 5);
+                  filter(proc_trend_chart, 6);
+
+              }
+          }
+      }
+      // tooltips for row chart
+      var rowTip = d3.tip()
+              .attr('class', 'd3-tip')
+              .offset([-10, 0])
+              .html(function (d) {
+                  return "<span style='color: #fff'>" + d.key + "</span> : " + numberFormat(d.value);
+              });
+
+      var pieTip = d3.tip()
+              .attr('class', 'd3-tip')
+              .offset([-10, 0])
+              .html(function (d) {
+                  return "<span style='color: #fff'>" + d.data.key + "</span> : " + numberFormat(d.value);
+              });
+      var barTip = d3.tip()
+              .attr('class', 'd3-tip')
+              .offset([-10, 0])
+              .html(function (d) { return "<span style='color: #f0027f'>" +  d.key + "</span> : "  + numberFormat(d.value) + " USD"; });
+
+
+      value_chart.width(400).height(400)
+                .dimension(cf.item)
+                .group(item_total_value)
+                .elasticX(true)
+              .renderLabel(true)
+              .renderTitle(false)
+				.on("filtered", getFiltersValues)
+				.xAxis().ticks(6).tickFormat(d3.format("$,s"));
+
+      proc_total_status_chart.width(300).height(220)
+              .dimension(cf.status)
+              .group( status_by_total)
+              .radius(110)
+              .innerRadius(25)
+              .slicesCap(15)
+              .legend(dc.legend().gap(3))
+              .colors(d3.scale.category20())
+              .renderLabel(true)
+              .renderTitle(false)
+              .on("filtered", getFiltersValues);
+
+      proc_total_target_chart.width(300).height(150)
+              .dimension(cf.targetpop)
+              .group( targetpop_by_total)
+              .elasticX(true)
+              .renderLabel(true)
+              .renderTitle(false)
+              .on("filtered", getFiltersValues)
+              .xAxis().ticks(4).tickFormat(d3.format("$,s"));
+			
+			itm_qty_chart.width(400).height(400)
+			    .dimension(cf.item)
+			    .on("filtered", getFiltersValues)
+			    .group(item_total_quantity)
+                .elasticX(true)
+                    .renderTitle(false)
+                    .renderLabel(true)
+                .xAxis().ticks(6).tickFormat(d3.format("s"));
+
+              proc_trend_chart
+                      .height(300)
+                      .width(1100)
+                      .renderHorizontalGridLines(true)
+                      .dimension(datedimension)
+                      .group(value_by_date)
+                      .renderTitle(true)
+                      .x(d3.time.scale().domain([minDate,maxDate]))
+                      //.x(d3.time.scale().domain(d3.extent(data, function(d) { return d.Date; })))
+                      .xUnits(d3.time.days)
+                      .on("filtered", getFiltersValues)
+                      .brushOn(true)
+                   //   .mouseZoomable(true)
+                      .gap(75)
+                      .elasticY(true)
+                      //.elasticX(true)
+                      .margins({left: 70 ,top: 10, bottom: 30, right: 50})
+                        .yAxis().ticks(7).tickFormat(d3.format("$,s"));
+
+      $(document).ready(function() {
+          $.ajax({
+              type: "GET",
+              url: "data/Location.csv",
+              dataType: "text",
+              success: function(data){displayData(data)}
+          });
+      });
+
+
+      function displayData(Text) {
+          data = $.csv.toObjects(Text);
+      //    alert(Text);
+
+          var map = L.map('map', { zoomControl: false }).setView([33.35, 43.8], 6);
+          L.tileLayer('http://{s}.tile.thunderforest.com/transport/{z}/{x}/{y}.png', {
+              attribution: '&copy; <a href="http://www.opencyclemap.org">OpenCycleMap</a>, &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>'
+          }).addTo(map);
+
+          data_array = [0, 0]; //create it before filling
+          data_array_filtered = [0, 0]; //create it before filling
+          for (i = 0; i < data.length; i++) {
+
+             data_array[i] = [parseFloat(data[i].Latitude), parseFloat(data[i].Longitude)]; // if values are marked as string in the object else:
+             //    data_array[i] = [data[i].Latitude,data[i].Longitude,data[i].val];
+          }
+
+          var data_array_filtered = data_array.filter(function(val) {
+              return !(val == "" || typeof val == "NaN" || val === null);
+          });
+
+
+         // console.log(data_array);
+         map.dragging.disable();
+          map.touchZoom.disable();
+         map.doubleClickZoom.disable();
+         map.scrollWheelZoom.disable();
+         map.boxZoom.disable();
+         map.keyboard.disable();
+       //   var geojsonFeature = "data/admin.geojson";
+       //   L.geoJson(geojsonFeature).addTo(map);
+
+          var Style_aog = {
+              "color": "#f00",
+              "weight": 2,
+              "opacity": 0.2
+          };
+
+          var Style_admin = {
+              "color": "#00f",
+              "weight": 2,
+              "opacity": 0.45
+          };
+
+          $.getJSON("data/admin1.geojson", function(json_admin1) {
+              //console.log(json);
+
+            L.geoJson(json_admin1, {style: Style_admin})
+                    .addTo(map);
+
+              $.getJSON("data/aog_controlled.geojson", function(json_aog) {
+                  //console.log(json);
+
+                  L.geoJson(json_aog, {style: Style_aog})
+                          .addTo(map)
+                          .bringToFront();
+
+
+          var heat = L.heatLayer(data_array, {
+              radius: 6,
+              blur: 7,
+              zoomlevel: 10,
+              maxZoom: 10
+          }).addTo(map);
+          })
+          });
+      }
+         initFilters();
+      dc.renderAll();
+      d3.selectAll("g.row").call(rowTip);
+      d3.selectAll("g.row").on('mouseover', rowTip.show)
+              .on('mouseout', rowTip.hide);
+      d3.selectAll(".pie-slice").call(pieTip);
+      d3.selectAll(".pie-slice").on('mouseover', pieTip.show)
+              .on('mouseout', pieTip.hide);
+        });
+
+  </script>
+	<script src="js/bootstrap.js"></script>
+
+
+
+ <div class="d3-tip n" style="position: absolute; display: none; box-sizing: border-box; top: 186.9px; left: 727.5px;"></div><div class="d3-tip" style="position: absolute; display: none; box-sizing: border-box;">
+            <div></div>
+            </body>
+</html>
+

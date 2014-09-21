@@ -1,0 +1,101 @@
+/*
+ * Override dc.js default styles for selection
+ */
+
+#map { height: 400px; width: 400px }
+
+.dc-chart .selected path {
+    stroke-width: 1;
+    stroke: #ccc;
+    fill-opacity: 1;
+}
+
+.dc-chart .selected path {
+    stroke-width: 1;
+    stroke: #ccc;
+    fill-opacity: 1;
+}
+
+/*
+ * Page specific styles
+ */
+
+.logo {
+        height:50px;
+	padding: 5px;
+	margin: 5px;
+}
+
+body {
+    font: 10px sans-serif;
+}
+
+.axis {
+    font: 10px sans-serif;
+}
+
+.axis path,
+.axis line {
+    fill: none;
+    stroke: #000;
+    shape-rendering: crispEdges;
+}
+
+.bar {
+    fill: orange;
+    width: 5px;
+}
+
+
+
+.x.axis path {
+    display: none;
+}
+
+.d3-tip {
+    line-height: 1;
+    font-weight: bold;
+    padding: 12px;
+    background: rgba(0, 0, 0, 0.8);
+    color: #fff;
+    border-radius: 2px;
+    font-size: 17px;
+
+
+
+}
+
+/* Creates a small triangle extender for the tooltip */
+.d3-tip:after {
+    box-sizing: border-box;
+    display: inline;
+    font-size: 10px;
+    width: 100%;
+    line-height: 1;
+    color: rgba(0, 0, 0, 0.8);
+    content: "\25BC";
+    position: absolute;
+    text-align: center;
+}
+
+/* Style northward tooltips differently */
+.d3-tip.n:after {
+    margin: -1px 0 0 0;
+    top: 100%;
+    left: 0;
+}
+.dc-chart g.dc-chart-body {
+    width: 4px;
+}
+
+.dc-chart g.row text {
+    fill: #523530;
+    font-size: 12px;
+    cursor: pointer;
+    font-weight: bold;
+}
+.dc-chart g.pie-slice text {
+    font-size: 16px;
+    cursor: pointer;
+    font-weight: bold;
+}
