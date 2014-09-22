@@ -61,7 +61,7 @@
         <div style="text-align:center" class="col-xs-12"><h5>Click on any of those graphs below to filter and slice the data. More Information on Iraq <a href="http://data.unhcr.org/syrianrefugees/country.php?id=103" target="_blank">here</a>.</h5></div>
 
     <div class="row">
-        <div style="text-align:left;float: left" class="col-md-8" data-position="right"><a class="reset btn btn-primary btn-sm"  data-step="6" data-intro="Click this button to reset all values or click 'reset' next to the title of a filtered chart." data-position="right"  id="reset" href="javascript:dc.filterAll();dc.redrawAll();">Reset All</a></div>
+        <div style="text-align:left;float: left" class="col-md-8" data-position="right"><a class="reset btn btn-primary btn-sm"  data-step="7" data-intro="Click this button to reset all values or click 'reset' next to the title of a filtered chart." data-position="right"  id="reset" href="javascript:dc.filterAll();dc.redrawAll();">Reset All</a></div>
         <div style="text-align:right;float: right" class="col-md-4"><a class="btn btn btn-success" href="javascript:void(0);" onclick="javascript:introJs().start();">Tutorial</a>
         </div>
     </div>
@@ -77,7 +77,8 @@
 </div>
 
 <div class="row">
-    <div id="proc_total_target" class="col-md-4 dc-chart"  data-step="4" data-intro="Click on this chart to filter items/activities by the targeted population."  data-position="left"  style="text-align:left" ><h5>NFI Value by Target Population (USD) <a class="reset" href="javascript:proc_total_target_chart.filterAll();dc.redrawAll();"style="display: none;">reset</a></h5></div>
+<div id="proc_total_target" class="col-md-4 dc-chart"  data-step="4" data-intro="Click on this chart to filter items/activities by the targeted population."  data-position="left"  style="text-align:left" ><h5>NFI Value by Target Population (USD) <a class="reset" href="javascript:proc_total_target_chart.filterAll();dc.redrawAll();"style="display: none;">reset</a></h5></div>
+<div id="proc_total_op" class="col-md-4 dc-chart"  data-step="5" data-intro="Click on this chart to filter items/activities by the operation."  data-position="left"  style="text-align:left" ><h5>NFI Value by Operation (USD) <a class="reset" href="javascript:proc_total_op.filterAll();dc.redrawAll();"style="display: none;">reset</a></h5></div>
 
 <div class=>
     <table>
@@ -89,7 +90,7 @@
                 <div id="" style="text-align:left"><h4><br></h4></div>
             </td>
         </tr>
-        <div id="proc_trend" class="col-md-12 dc-chart"  data-step="5" data-intro="Select a timeframe to restrict activities to that interval only."  data-position="top" style="text-align:center" ><h5>Supply Timeline <a class="reset" href="javascript:proc_trend_chart.filterAll();dc.redrawAll();"style="display: none;">reset</a></h5></div>
+        <div id="proc_trend" class="col-md-12 dc-chart"  data-step="6" data-intro="Select a timeframe to restrict activities to that interval only."  data-position="top" style="text-align:center" ><h5>Supply Timeline <a class="reset" href="javascript:proc_trend_chart.filterAll();dc.redrawAll();"style="display: none;">reset</a></h5></div>
     </table>
 
   </div>
@@ -101,11 +102,10 @@
   var value_chart = dc.rowChart("#item_value");
   var proc_total_status_chart = dc.pieChart("#proc_total_status");
   var proc_total_target_chart = dc.rowChart("#proc_total_target");
+  var proc_total_op = dc.rowChart("#proc_total_op");
   var itm_qty_chart = dc.rowChart("#itm_qty");
-  //var proc_trend_chart = dc.barChart("#proc_trend");
   var proc_trend_chart = dc.barChart("#proc_trend");
-  //var	parseDate = d3.time.format("%Y-%m").parse;
-  //var map_chart = dc.geoChoroplethChart("#mapchart");
+;
 
   d3.csv("data/Dataset.csv", function(csv_data) {
 
@@ -122,6 +122,9 @@
       cf.targetpop = cf.dimension(function (d) {
           return d.Target_Population;
       });
+      cf.op = cf.dimension(function (d) {
+          return d.Operation;
+      });
 
       cf.item = cf.dimension(function (d) {
           return d.Item;
@@ -137,6 +140,7 @@
       });
 
       var targetpop = cf.targetpop.group();
+      var op = cf.op.group();
       // var date = cf.date.group();
       var item = cf.item.group();
       var source = cf.source.group();
@@ -144,6 +148,10 @@
       var status = cf.source.group();
 
       var all = cf.groupAll();
+
+      var op_by_total = cf.op.group().reduceSum(function (d) {
+          return d.Value;
+      });
 
       var item_total_quantity = cf.item.group().reduceSum(function (d) {
           return d.Quantity;
@@ -194,6 +202,7 @@
               { name: 'proc', value: proc_total_status_chart.filters()},
               { name: 'proc2', value: proc_total_target_chart.filters()},
               { name: 'itm_qty', value: itm_qty_chart.filters()},
+              { name: 'op', value: proc_total_op.filters()}
              // { name: 'proc_trend', value: proc_trend_chart.filters()}
           ];
 
@@ -228,6 +237,7 @@
                   filter(itm_qty_chart, 3);
                   filter(proc_per_itm_chart, 5);
                   filter(proc_trend_chart, 6);
+                  filter(proc_total_op, 6);
 
               }
           }
@@ -251,7 +261,7 @@
               .offset([-10, 0])
               .html(function (d) { return "<span style='color: #f0027f'>" +  d.key + "</span> : "  + numberFormat(d.value) + " USD"; });
 
-      value_chart.width(400).height(400)
+      value_chart.width(400).height(485)
                 .dimension(cf.item)
                 .group(item_total_value)
                 .elasticX(true)
@@ -260,19 +270,19 @@
 				.on("filtered", getFiltersValues)
 				.xAxis().ticks(6).tickFormat(d3.format("$,s"));
 
-      proc_total_status_chart.width(300).height(220)
+      proc_total_status_chart.width(300).height(200)
               .dimension(cf.status)
               .group( status_by_total)
-              .radius(110)
+              .radius(100)
               .innerRadius(25)
               .slicesCap(15)
-              .legend(dc.legend().gap(3))
+              //.legend(dc.legend().gap(3))
               .colors(d3.scale.category20())
               .renderLabel(true)
               .renderTitle(false)
               .on("filtered", getFiltersValues);
 
-      proc_total_target_chart.width(300).height(150)
+      proc_total_target_chart.width(300).height(120)
               .dimension(cf.targetpop)
               .group( targetpop_by_total)
               .elasticX(false)
@@ -280,8 +290,17 @@
               .renderTitle(false)
               .on("filtered", getFiltersValues)
               .xAxis().ticks(4).tickFormat(d3.format("$,s"));
+
+      proc_total_op.width(300).height(90)
+              .dimension(cf.op)
+              .group( op_by_total)
+              .elasticX(false)
+              .renderLabel(true)
+              .renderTitle(false)
+              .on("filtered", getFiltersValues)
+              .xAxis().ticks(4).tickFormat(d3.format("$,s"));
 			
-			itm_qty_chart.width(400).height(400)
+			itm_qty_chart.width(400).height(485)
 			    .dimension(cf.item)
 			    .on("filtered", getFiltersValues)
 			    .group(item_total_quantity)
