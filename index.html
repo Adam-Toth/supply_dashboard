@@ -29,6 +29,7 @@
     <link rel="stylesheet" type="text/css" href="css/introjs-nazanin.css">
     <link rel="stylesheet" type="text/css" href="css/iraq_dashboard.css">
 
+
     <!-- JS -->
 
     <script type="text/javascript" src="js/jquery.js"></script>
@@ -43,6 +44,8 @@
     <script type="text/javascript" src="js/leaflet-heat.js"></script>
     <script type="text/javascript" src="js/jquery.csv-0.71.min.js"></script>
     <script type="text/javascript" src="js/underscore-min.js"></script>
+    <script type="text/javascript" src="js/miso.ds.deps.min.js"></script>
+
 
     <!-- Favicon -->
     <link href="images/favicon.ico" rel="icon" type="image/x-icon">
@@ -98,22 +101,34 @@
 
   <script>
 
-
   var value_chart = dc.rowChart("#item_value");
   var proc_total_status_chart = dc.pieChart("#proc_total_status");
   var proc_total_target_chart = dc.rowChart("#proc_total_target");
   var proc_total_op = dc.rowChart("#proc_total_op");
   var itm_qty_chart = dc.rowChart("#itm_qty");
   var proc_trend_chart = dc.barChart("#proc_trend");
-;
 
-  d3.csv("data/Dataset.csv", function(csv_data) {
+var ds = new Miso.Dataset({
+    importer : Miso.Dataset.Importers.GoogleSpreadsheet,
+    parser : Miso.Dataset.Parsers.GoogleSpreadsheet,
+    key : "12dxOiV7n0r0ANNaAvrXPuJRxS9h8lhGgb7DVVMgh8gA",
+    worksheet : "1"
+});
+
+ds.fetch({
+    success : function() {
+        var spreadsheetdata = [];
+        this.each(function(row){ spreadsheetdata.push(row);});
+
+
+
+ // d3.csv("data/Dataset.csv", function(csv_data) {
 
      var numberFormat = d3.format(",f");
       var dateFormat = d3.time.format("%Y-%m-%d");
       var monthNameFormat = d3.time.format("%B");
       var monthNumberFormat = d3.time.format("%-m");
-      var cf = crossfilter(csv_data);
+      var cf = crossfilter(spreadsheetdata);
 
       //  var lat = csv_data.map( function(d){
       //      return d.Latitude
@@ -170,9 +185,8 @@
       var parseDate = d3.time.format("%Y-%m-%d").parse;
       var parseDate_week = d3.time.format("%Y-%U").parse;
       var parseDate2 = d3.time.format("%m/%d").parse;
-      csv_data.forEach(function(d) {
+        spreadsheetdata.forEach(function(d) {
               d.date = parseDate(d.Date);
-              d.date2 = parseDate2(d.Date);
       });
       //var recordsx = crossfilter(csv_data);
 
@@ -412,10 +426,26 @@
       d3.selectAll(".pie-slice").call(pieTip);
       d3.selectAll(".pie-slice").on('mouseover', pieTip.show)
               .on('mouseout', pieTip.hide);
-        });
+       // });
+    }
+});
+
 
   </script>
 	<script src="js/bootstrap.js"></script>
+
+// Google Analytics script
+
+<script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+            m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-55069188-1', 'auto');
+    ga('send', 'pageview');
+
+</script>
 
  <div class="d3-tip n" style="position: absolute; display: none; box-sizing: border-box; top: 186.9px; left: 727.5px;"></div><div class="d3-tip" style="position: absolute; display: none; box-sizing: border-box;">
             <div></div>
