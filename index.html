@@ -40,7 +40,7 @@
     <script type="text/javascript" src="js/d3.js"></script>
     <script type="text/javascript" src="js/d3.min.js"></script>
     <script type="text/javascript" src="js/d3.tip.min.js"></script>
-    <script type="text/javascript" t src="js/leaflet.js"></script>
+    <script type="text/javascript" src="js/leaflet.js"></script>
     <script type="text/javascript" src="js/leaflet-heat.js"></script>
     <script type="text/javascript" src="js/jquery.csv-0.71.min.js"></script>
     <script type="text/javascript" src="js/underscore-min.js"></script>
@@ -53,17 +53,14 @@
   </head>
   <body>
 
-  
-      <div style="display: none;" class="col-sm-4 col-md-offset4" id="loading">
-        <h1>Patience: Loading the data... (~a few MB)</h1><small>This webpage does not work on IE8 or older... Upgrade your browser if needed</small>
-    </div>
+  <div class="loader"></div>
 
     <div style="display: block; text-align:center" class="container" id="dashboard">
         <h1><strong>2014 Iraq NFI Supply Pipeline</strong></h1>
         <div style="text-align:center" class="col-xs-12"><h5>Click on any of those graphs below to filter and slice the data. More Information on Iraq <a href="http://data.unhcr.org/syrianrefugees/country.php?id=103" target="_blank">here</a>.</h5></div>
 
     <div class="row">
-        <div style="text-align:left;float: left" class="col-md-8" data-position="right"><a class="reset btn btn-primary btn-sm"  data-step="7" data-intro="Click this button to reset all values or click 'reset' next to the title of a filtered chart." data-position="right"  id="reset" href="javascript:dc.filterAll();dc.redrawAll();">Reset All</a></div>
+        <div style="text-align:left;float: left" class="col-md-8" data-position="right"><a class="reset btn btn-primary btn-sm"  data-step="8" data-intro="Click this button to reset all values or click 'reset' next to the title of a filtered chart." data-position="right"  id="reset" href="javascript:dc.filterAll();dc.redrawAll();">Reset All</a></div>
         <div style="text-align:right;float: right" class="col-md-4"><a class="btn btn btn-success" href="javascript:void(0);" onclick="javascript:introJs().start();">Tutorial</a>
         </div>
     </div>
@@ -92,26 +89,37 @@
                 <div id="" style="text-align:left"><h4><br></h4></div>
             </td>
         </tr>
-        <div id="proc_trend" class="col-md-12 dc-chart"  data-step="6" data-intro="Select a timeframe to restrict activities to that interval only."  data-position="top" style="text-align:center" ><h5>Supply Timeline <a class="reset" href="javascript:proc_trend_chart.filterAll();dc.redrawAll();"style="display: none;">reset</a></h5></div>
+        <div id="proc_trend" class="col-md-6 dc-chart"  data-step="6" data-intro="Select a timeframe to restrict activities to that interval only."  data-position="top" style="text-align:center" ><h5>Supply Timeline <a class="reset" href="javascript:proc_trend_chart.filterAll();dc.redrawAll();"style="display: none;">reset</a></h5></div>
     </table>
 
   </div>
-  
 
-  <script>
+<div id="map" class="col-md-6 dc-chart"  data-step="7" data-intro="Hover the mouse over a governorate to see the value of items released."  data-position="left"  style="text-align:left; margin: 20px" ><h5></h5></div>
 
-  var value_chart = dc.rowChart("#item_value");
-  var proc_total_status_chart = dc.pieChart("#proc_total_status");
-  var proc_total_target_chart = dc.rowChart("#proc_total_target");
-  var proc_total_op = dc.rowChart("#proc_total_op");
-  var itm_qty_chart = dc.rowChart("#itm_qty");
-  var proc_trend_chart = dc.barChart("#proc_trend");
+<div class="row">
+<div></div>
+<div></div>
+</div>
 
-var ds = new Miso.Dataset({
-    importer : Miso.Dataset.Importers.GoogleSpreadsheet,
-    parser : Miso.Dataset.Parsers.GoogleSpreadsheet,
-    key : "12dxOiV7n0r0ANNaAvrXPuJRxS9h8lhGgb7DVVMgh8gA",
-    worksheet : "1"
+<script>
+
+  $(window).load(function() {
+
+      $(".loader").fadeOut("slow");
+  });
+
+        var value_chart = dc.rowChart("#item_value");
+        var proc_total_status_chart = dc.pieChart("#proc_total_status");
+        var proc_total_target_chart = dc.rowChart("#proc_total_target");
+        var proc_total_op = dc.rowChart("#proc_total_op");
+        var itm_qty_chart = dc.rowChart("#itm_qty");
+        var proc_trend_chart = dc.barChart("#proc_trend");
+
+        var ds = new Miso.Dataset({
+            importer : Miso.Dataset.Importers.GoogleSpreadsheet,
+            parser : Miso.Dataset.Parsers.GoogleSpreadsheet,
+            key : "12dxOiV7n0r0ANNaAvrXPuJRxS9h8lhGgb7DVVMgh8gA",
+            worksheet : "1"
 });
 
 ds.fetch({
@@ -119,93 +127,95 @@ ds.fetch({
         var spreadsheetdata = [];
         this.each(function(row){ spreadsheetdata.push(row);});
 
+        var groupped = this.groupBy("A1Code",["Value"]);
 
+        groupped = groupped.where({columns: ["A1Code","Value"],
+            rows: function(row){
+                return row.A1Code != null;
+            }
+        });
 
- // d3.csv("data/Dataset.csv", function(csv_data) {
+        var Location_json = groupped.toJSON();
 
-     var numberFormat = d3.format(",f");
-      var dateFormat = d3.time.format("%Y-%m-%d");
-      var monthNameFormat = d3.time.format("%B");
-      var monthNumberFormat = d3.time.format("%-m");
-      var cf = crossfilter(spreadsheetdata);
+        var numberFormat = d3.format(",f");
+        var dateFormat = d3.time.format("%Y-%m-%d");
+        var monthNameFormat = d3.time.format("%B");
+        var monthNumberFormat = d3.time.format("%-m");
+        var cf = crossfilter(spreadsheetdata);
 
-      //  var lat = csv_data.map( function(d){
-      //      return d.Latitude
-      //  });
-
-      cf.targetpop = cf.dimension(function (d) {
+        cf.targetpop = cf.dimension(function (d) {
           return d.Target_Population;
-      });
-      cf.op = cf.dimension(function (d) {
+        });
+        cf.op = cf.dimension(function (d) {
           return d.Operation;
-      });
-
-      cf.item = cf.dimension(function (d) {
+        });
+        cf.item = cf.dimension(function (d) {
           return d.Item;
-      });
-      cf.source = cf.dimension(function (d) {
+        });
+        cf.source = cf.dimension(function (d) {
           return d.Source;
-      });
-      cf.don_country = cf.dimension(function (d) {
-          return d.don_country;
-      });
-      cf.status = cf.dimension(function (d) {
+        });
+        cf.status = cf.dimension(function (d) {
           return d.Status;
-      });
+        });
+        cf.location = cf.dimension(function (d) {
+            return d.Location;
+        });
 
-      var targetpop = cf.targetpop.group();
-      var op = cf.op.group();
-      // var date = cf.date.group();
-      var item = cf.item.group();
-      var source = cf.source.group();
-      var don_country = cf.source.group();
-      var status = cf.source.group();
+        var targetpop = cf.targetpop.group();
+        var op = cf.op.group();
+        // var date = cf.date.group();
+        var item = cf.item.group();
+        var source = cf.source.group();
+        var status = cf.status.group();
+        var location = cf.location.group();
 
-      var all = cf.groupAll();
+        var all = cf.groupAll();
 
-      var op_by_total = cf.op.group().reduceSum(function (d) {
-          return d.Value;
-      });
+        var op_by_total = cf.op.group().reduceSum(function (d) {
+            return d.Value;
+        });
 
-      var item_total_quantity = cf.item.group().reduceSum(function (d) {
-          return d.Quantity;
-      });
-      var status_by_total = cf.status.group().reduceSum(function (d) {
-          return d.Value;
-      });
-      var item_total_value = cf.item.group().reduceSum(function (d) {
-          return d.Value;
+        var item_total_quantity = cf.item.group().reduceSum(function (d) {
+            return d.Quantity;
+        });
+        var status_by_total = cf.status.group().reduceSum(function (d) {
+            return d.Value;
+        });
+        var item_total_value = cf.item.group().reduceSum(function (d) {
+            return d.Value;
 
-      });
-      var targetpop_by_total = cf.targetpop.group().reduceSum(function (d) {
-          return d.Value;
-      });
+        });
+        var targetpop_by_total = cf.targetpop.group().reduceSum(function (d) {
+            return d.Value;
+        });
 
-      var parseDate = d3.time.format("%Y-%m-%d").parse;
-      var parseDate_week = d3.time.format("%Y-%U").parse;
-      var parseDate2 = d3.time.format("%m/%d").parse;
+        var location_by_value = cf.location.group().reduceSum(function (d) {
+            return d.Value;
+        });
+
+        var parseDate = d3.time.format("%Y-%m-%d").parse;
+        var parseDate_week = d3.time.format("%Y-%U").parse;
+        var parseDate2 = d3.time.format("%Y-%m").parse;
         spreadsheetdata.forEach(function(d) {
-              d.date = parseDate(d.Date);
-      });
-      //var recordsx = crossfilter(csv_data);
-
-      var dims={};
-      var groups ={};
-
-    var   datedimension = cf.dimension(function(d) {
-       return (d.date);});
-    datedimension.filter("");
-      cf.remove();
-      datedimension.filterAll();
-     var  value_by_date = datedimension.group().reduceSum(function(d) {return(d.Value);});
+            d.date = parseDate(d.Date);
+            d.month = d3.time.month(d.date);
+        });
 
 
+        var dims={};
+        var groups ={};
 
+        var   datedimension = cf.dimension(function(d) {
+           return (d.month);});
+        datedimension.filter("");
+        cf.remove();
+        datedimension.filterAll();
+        var  value_by_date = datedimension.group().reduceSum(function(d) {return(d.Value);});
 
-      var minDate = datedimension.bottom(1)[0].date;
-      var maxDate = dateFormat.parse("2014-12-31");
-    //  var maxDate = datedimension.top(1)[0].date;
-     // console.log(maxDate);
+        var minDate = datedimension.bottom(1)[0].date;
+        var maxDate = datedimension.top(1)[0].date;
+
 
       // Implement bookmarking chart filters status
       // Serializing filters values in URL
@@ -215,8 +225,8 @@ ds.fetch({
               { name: 'proc', value: proc_total_status_chart.filters()},
               { name: 'proc2', value: proc_total_target_chart.filters()},
               { name: 'itm_qty', value: itm_qty_chart.filters()},
-              { name: 'op', value: proc_total_op.filters()}
-             // { name: 'proc_trend', value: proc_trend_chart.filters()}
+              { name: 'op', value: proc_total_op.filters()},
+              { name: 'proc_trend', value: proc_trend_chart.filters()}
           ];
 
           var recursiveEncoded = $.param(filters);
@@ -224,7 +234,6 @@ ds.fetch({
       }
 
       // Init chart filters
-      {
 
           function initFilters() {
               // Get hash values
@@ -248,13 +257,13 @@ ds.fetch({
                   filter(value_chart, 1);
                   filter(proc_chart, 2);
                   filter(itm_qty_chart, 3);
-                  filter(proc_per_itm_chart, 5);
-                  filter(proc_trend_chart, 6);
+                  filter(proc_per_itm_chart, 4);
+                  filter(proc_trend_chart, 5);
                   filter(proc_total_op, 6);
 
               }
           }
-      }
+
       // tooltips for row chart
       var rowTip = d3.tip()
               .attr('class', 'd3-tip')
@@ -272,159 +281,229 @@ ds.fetch({
       var barTip = d3.tip()
               .attr('class', 'd3-tip')
               .offset([-10, 0])
-              .html(function (d) { return "<span style='color: #f0027f'>" +  d.key + "</span> : "  + numberFormat(d.value) + " USD"; });
+              .html(function (d) {
+                  return "<span style='color: #fff'>" +  monthNameFormat(d.key) + "</span> : "  + numberFormat(d.value) + " USD";
+              });
 
       value_chart.width(400).height(485)
                 .dimension(cf.item)
-                .group(item_total_value)
+                .group(item_total_value  = item_total_value || 0)
                 .elasticX(true)
-              .renderLabel(true)
-              .renderTitle(false)
-				.on("filtered", getFiltersValues)
-				.xAxis().ticks(6).tickFormat(d3.format("$,s"));
+                .renderLabel(true)
+                .renderTitle(false)
+                .on("filtered", getFiltersValues)
+                .xAxis().ticks(6).tickFormat(d3.format("$,s"));
 
       proc_total_status_chart.width(300).height(200)
-              .dimension(cf.status)
-              .group( status_by_total)
-              .radius(100)
-              .innerRadius(25)
-              .slicesCap(15)
-              //.legend(dc.legend().gap(3))
-              .colors(d3.scale.category20())
-              .renderLabel(true)
-              .renderTitle(false)
-              .on("filtered", getFiltersValues);
+                .dimension(cf.status)
+                .group(status_by_total  = status_by_total || 0)
+                .radius(100)
+                .innerRadius(25)
+                .slicesCap(15)
+                //.legend(dc.legend().gap(3))
+                .colors(d3.scale.category20())
+                .renderLabel(true)
+                .renderTitle(false)
+                .on("filtered", getFiltersValues);
 
       proc_total_target_chart.width(300).height(120)
-              .dimension(cf.targetpop)
-              .group( targetpop_by_total)
-              .elasticX(false)
-              .renderLabel(true)
-              .renderTitle(false)
-              .on("filtered", getFiltersValues)
-              .xAxis().ticks(4).tickFormat(d3.format("$,s"));
+                .dimension(cf.targetpop)
+                .group(targetpop_by_total  = targetpop_by_total || 0)
+                .elasticX(false)
+                .renderLabel(true)
+                .renderTitle(false)
+                .on("filtered", getFiltersValues)
+                .xAxis().ticks(4).tickFormat(d3.format("$,s"));
 
       proc_total_op.width(300).height(90)
-              .dimension(cf.op)
-              .group( op_by_total)
-              .elasticX(false)
-              .renderLabel(true)
-              .renderTitle(false)
-              .on("filtered", getFiltersValues)
-              .xAxis().ticks(4).tickFormat(d3.format("$,s"));
+                .dimension(cf.op)
+                .group(op_by_total = op_by_total || 0)
+                .elasticX(false)
+                .renderLabel(true)
+                .renderTitle(false)
+                .on("filtered", getFiltersValues)
+                .xAxis().ticks(4).tickFormat(d3.format("$,s"));
 			
-			itm_qty_chart.width(400).height(485)
-			    .dimension(cf.item)
-			    .on("filtered", getFiltersValues)
-			    .group(item_total_quantity)
+	  itm_qty_chart.width(400).height(485)
+                .dimension(cf.item)
+                .on("filtered", getFiltersValues)
+                .group(item_total_quantity = item_total_quantity || 0)
                 .elasticX(true)
-                    .renderTitle(false)
-                    .renderLabel(true)
+                .renderTitle(false)
+                .renderLabel(true)
                 .xAxis().ticks(6).tickFormat(d3.format("s"));
 
-              proc_trend_chart
-                      .height(300)
-                      .width(1100)
-                      .renderHorizontalGridLines(true)
-                      .dimension(datedimension)
-                      .group(value_by_date)
-                      .renderTitle(true)
-                      .x(d3.time.scale().domain([minDate,maxDate]))
-                      //.x(d3.time.scale().domain(d3.extent(data, function(d) { return d.Date; })))
-                      .xUnits(d3.time.month)
-                      .on("filtered", getFiltersValues)
-                      .brushOn(true)
-                   //   .mouseZoomable(true)
-                      .gap(75)
-                      .elasticY(false)
-                      //.elasticX(true)
-                      .margins({left: 70 ,top: 10, bottom: 30, right: 50})
-                        .yAxis().ticks(7).tickFormat(d3.format("$,s"));
+      proc_trend_chart
+                .height(300)
+                .width(600)
+                .renderHorizontalGridLines(true)
+                .dimension(datedimension)
+                .group(value_by_date)
+                // .renderTitle(true)
+                .title(function (d) { return monthNameFormat(d.key) + ": " + numberFormat(d.value); })
+                .x(d3.time.scale().domain([minDate,maxDate]))
+                //.x(d3.time.scale().domain(d3.extent(data, function(d) { return d.Date; })))
+                //.xUnits(d3.time.month)
+                .xUnits(function(){return 15;})
+                .on("filtered", getFiltersValues)
+                .brushOn(true)
+                // .gap(10)
+                .elasticY(false)
+                .renderlet(function (chart) {
+                chart.selectAll("g.x text")
+                     .attr('dx', '-30')
+                     .attr('transform', "rotate(-45)");
+                      })
+                .margins({left: 70 ,top: 10, bottom: 50, right: 50})
+                .yAxis().ticks(7).tickFormat(d3.format("$,s"));
 
-      /* $(document).ready(function() {
-          $.ajax({
-              type: "GET",
-              url: "data/Location.csv",
-              dataType: "text",
-              success: function(data){displayData(data)}
-          });
-      });
+        //Map
+        d3.json("data/admin1.geojson", function(json) {
 
+            for (var i = 0; i < Location_json.length; i++) {
+                var dist_Location = Location_json[i].A1Code;
+                var dist_Value = parseFloat(Location_json[i].Value);
 
-      function displayData(Text) {
-          data = $.csv.toObjects(Text);
+                for (var j = 0; j < json.features.length; j++) {
+                    var jsonState = json.features[j].properties.A1Code;
 
-         var map = L.map('map', { zoomControl: false }).setView([33.35, 43.8], 6);
-          L.tileLayer('http://{s}.tile.thunderforest.com/transport/{z}/{x}/{y}.png', {
-              attribution: '&copy; <a href="http://www.opencyclemap.org">OpenCycleMap</a>, &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>'
-          }).addTo(map);
+                    if (dist_Location == jsonState) {
+                        json.features[j].properties.Value = dist_Value;
+                        break;
 
-          data_array = [0, 0]; //create it before filling
-          data_array_filtered = [0, 0]; //create it before filling
-          for (i = 0; i < data.length; i++) {
+                    }
+                }
+            }
 
-             data_array[i] = [parseFloat(data[i].Latitude), parseFloat(data[i].Longitude)]; // if values are marked as string in the object else:
-             //    data_array[i] = [data[i].Latitude,data[i].Longitude,data[i].val];
-          }
+            var geojson;
 
-          var data_array_filtered = data_array.filter(function(val) {
-              return !(val == "" || typeof val == "NaN" || val === null);
-          });
-
-
-         // console.log(data_array);
-         map.dragging.disable();
-          map.touchZoom.disable();
-         map.doubleClickZoom.disable();
-         map.scrollWheelZoom.disable();
-         map.boxZoom.disable();
-         map.keyboard.disable();
-       //   var geojsonFeature = "data/admin.geojson";
-       //   L.geoJson(geojsonFeature).addTo(map);
-
-          var Style_aog = {
-              "color": "#f00",
-              "weight": 2,
-              "opacity": 0.2
-          };
-
-          var Style_admin = {
-              "color": "#00f",
-              "weight": 2,
-              "opacity": 0.45
-          };
-
-          $.getJSON("data/admin1.geojson", function(json_admin1) {
-              //console.log(json);
-
-            L.geoJson(json_admin1, {style: Style_admin})
+            var map = L.map('map', { zoomControl: false }).setView([33.35, 43.8], 6);
+            L.tileLayer('', {
+            })
                     .addTo(map);
 
-              $.getJSON("data/aog_controlled.geojson", function(json_aog) {
-                  //console.log(json);
+            map.dragging.disable();
+            map.touchZoom.disable();
+            map.doubleClickZoom.disable();
+            map.scrollWheelZoom.disable();
+            map.boxZoom.disable();
+            map.keyboard.disable();
 
-                  L.geoJson(json_aog, {style: Style_aog})
-                          .addTo(map)
-                          .bringToFront();
+            // control that shows state info on hover
+            var info = L.control();
+
+            info.onAdd = function (map) {
+                this._div = L.DomUtil.create('div', 'info');
+                this.update();
+                return this._div;
+            };
+
+            info.update = function (props) {
+                this._div.innerHTML = '<h4>Released Value</h4>' +  (props ?
+                        '<b>' + props.A1NameEn + '</b><br />' + numberFormat(props.Value = props.Value || 0) + ' USD'
+                        : 'Hover over a Governorate');
+            };
+
+            info.addTo(map);
 
 
-          var heat = L.heatLayer(data_array, {
-              radius: 6,
-              blur: 7,
-              zoomlevel: 10,
-              maxZoom: 10
-          }).addTo(map);
-          })
-          });
-      }*/
+            // get color depending on population density value
+            function getColor(d) {
+                return          d > 5000000 ? '#084594' :
+                                d > 2500000  ? '#2171b5' :
+                                d > 1000000  ? '#4292c6' :
+                                d > 500000  ? '#6baed6' :
+                                d > 250000   ? '#9ecae1' :
+                                d > 100000   ? '#c6dbef' :
+                    //  d > 50000   ? '#deebf7' :
+                        '#f7fbff';
+            }
+
+            function style(feature) {
+                return {
+                    weight: 2,
+                    opacity: 1,
+                    color: 'white',
+                    dashArray: '3',
+                    fillOpacity: 0.7,
+                    fillColor: getColor(feature.properties.Value)
+                };
+            }
+
+            function highlightFeature(e) {
+                var layer = e.target;
+
+                layer.setStyle({
+                    weight: 5,
+                    color: '#666',
+                    dashArray: '',
+                    fillOpacity: 0.7
+                });
+
+                if (!L.Browser.ie && !L.Browser.opera) {
+                    layer.bringToFront();
+                }
+
+                info.update(layer.feature.properties);
+            }
+
+            function resetHighlight(e) {
+                geojson.resetStyle(e.target);
+                info.update();
+            }
+
+            function onEachFeature(feature, layer) {
+                layer.on({
+                    mouseover: highlightFeature,
+                    mouseout: resetHighlight,
+                });
+            }
+
+            geojson = L.geoJson(json, {
+                style: style,
+                onEachFeature: onEachFeature
+            }).addTo(map);
+
+
+            var legend = L.control({position: 'bottomleft'});
+
+            legend.onAdd = function (map) {
+
+                var div = L.DomUtil.create('div', 'info legend'),
+                        grades = [0, 50000, 100000, 250000, 500000, 1000000, 2000000, 2500000],
+                        labels = [],
+                        from, to;
+
+                for (var i = 0; i < grades.length; i++) {
+                    from = grades[i];
+                    to = grades[i + 1];
+
+                    labels.push(
+                                    '<i style="background:' + getColor(from + 1) + '"></i> ' +
+                                    from + (to ? '&ndash;' + to : '+'));
+                }
+
+                div.innerHTML = labels.join('<br>');
+                return div;
+            };
+            //legend.addTo(map);
+        })
+
+
          initFilters();
       dc.renderAll();
+
       d3.selectAll("g.row").call(rowTip);
       d3.selectAll("g.row").on('mouseover', rowTip.show)
               .on('mouseout', rowTip.hide);
+
       d3.selectAll(".pie-slice").call(pieTip);
       d3.selectAll(".pie-slice").on('mouseover', pieTip.show)
               .on('mouseout', pieTip.hide);
+
+      d3.selectAll("g.stack").call(barTip);
+      d3.selectAll("g.stack").on('mouseover', barTip.show)
+              .on('mouseout', barTip.hide);
        // });
     }
 });
