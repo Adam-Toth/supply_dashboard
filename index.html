@@ -5,14 +5,14 @@
 <meta content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0" name="viewport">
 <meta name="author" content="Adam Toth">
 
-<meta property="og:title" content="2014 Iraq NFI Supply Pipeline">
+<meta property="og:title" content="Iraq NFI Supply Pipeline">
 <meta property="og:type" content="article">
-<meta property="og:site_name" content="2014 Iraq NFI Supply Pipeline">
-<meta property="og:description" content="2014 Iraq NFI Supply Pipeline">
+<meta property="og:site_name" content="Iraq Supply Pipeline">
+<meta property="og:description" content="Iraq Supply Pipeline">
 
 
 
-    <title>2014 Iraq NFI Supply Pipeline</title>
+    <title>Iraq Supply Pipeline</title>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -41,9 +41,7 @@
     <script type="text/javascript" src="js/d3.min.js"></script>
     <script type="text/javascript" src="js/d3.tip.min.js"></script>
     <script type="text/javascript" src="js/leaflet.js"></script>
-    <script type="text/javascript" src="js/leaflet-heat.js"></script>
     <script type="text/javascript" src="js/jquery.csv-0.71.min.js"></script>
-    <script type="text/javascript" src="js/underscore-min.js"></script>
     <script type="text/javascript" src="js/miso.ds.deps.min.js"></script>
 
 
@@ -56,7 +54,7 @@
   <div class="loader"></div>
 
     <div style="display: block; text-align:center" class="container" id="dashboard">
-        <h1><strong>2014 Iraq NFI Supply Pipeline</strong></h1>
+        <h1><strong>Iraq Supply Pipeline</strong></h1>
         <div style="text-align:center" class="col-xs-12"><h5>Click on any of those graphs below to filter and slice the data. More Information on Iraq <a href="http://data.unhcr.org/syrianrefugees/country.php?id=103" target="_blank">here</a>.</h5></div>
 
     <div class="row">
@@ -195,27 +193,20 @@ ds.fetch({
         });
 
         var parseDate = d3.time.format("%Y-%m-%d").parse;
-        var parseDate_week = d3.time.format("%Y-%U").parse;
-        var parseDate2 = d3.time.format("%Y-%m").parse;
         spreadsheetdata.forEach(function(d) {
             d.date = parseDate(d.Date);
             d.month = d3.time.month(d.date);
         });
 
+        var datedimension = cf.dimension(function(d) {return (d.month);});
 
-        var dims={};
-        var groups ={};
-
-        var   datedimension = cf.dimension(function(d) {
-           return (d.month);});
         datedimension.filter("");
         cf.remove();
         datedimension.filterAll();
-        var  value_by_date = datedimension.group().reduceSum(function(d) {return(d.Value);});
 
+        var value_by_date = datedimension.group().reduceSum(function(d) {return(d.Value);});
         var minDate = datedimension.bottom(1)[0].date;
         var maxDate = datedimension.top(1)[0].date;
-
 
       // Implement bookmarking chart filters status
       // Serializing filters values in URL
@@ -343,8 +334,8 @@ ds.fetch({
                 .title(function (d) { return monthNameFormat(d.key) + ": " + numberFormat(d.value); })
                 .x(d3.time.scale().domain([minDate,maxDate]))
                 //.x(d3.time.scale().domain(d3.extent(data, function(d) { return d.Date; })))
-                //.xUnits(d3.time.month)
-                .xUnits(function(){return 15;})
+                .xUnits(d3.time.months)
+               // .xUnits(function(){return 20;})
                 .on("filtered", getFiltersValues)
                 .brushOn(true)
                 // .gap(10)
@@ -355,7 +346,8 @@ ds.fetch({
                      .attr('transform', "rotate(-45)");
                       })
                 .margins({left: 70 ,top: 10, bottom: 50, right: 50})
-                .yAxis().ticks(7).tickFormat(d3.format("$,s"));
+                .yAxis().ticks(7).tickFormat(d3.format("$,s"))
+
 
         //Map
         d3.json("data/admin1.geojson", function(json) {
@@ -377,11 +369,11 @@ ds.fetch({
 
             var geojson;
 
-            var map = L.map('map', { zoomControl: false }).setView([33.35, 43.8], 6);
+            var map = L.map('map', { zoomControl: false }).setView([33.15, 43.8], 6);
             L.tileLayer('', {
+                attribution: "This map does not imply official endorsement or acceptance by the United Nations"
             })
                     .addTo(map);
-
             map.dragging.disable();
             map.touchZoom.disable();
             map.doubleClickZoom.disable();
@@ -389,7 +381,7 @@ ds.fetch({
             map.boxZoom.disable();
             map.keyboard.disable();
 
-            // control that shows state info on hover
+            // control that shows Governorate info on hover
             var info = L.control();
 
             info.onAdd = function (map) {
@@ -407,16 +399,16 @@ ds.fetch({
             info.addTo(map);
 
 
-            // get color depending on population density value
+            // get color depending on released value
             function getColor(d) {
-                return          d > 5000000 ? '#084594' :
-                                d > 2500000  ? '#2171b5' :
-                                d > 1000000  ? '#4292c6' :
-                                d > 500000  ? '#6baed6' :
-                                d > 250000   ? '#9ecae1' :
-                                d > 100000   ? '#c6dbef' :
-                    //  d > 50000   ? '#deebf7' :
-                        '#f7fbff';
+                return          d > 5000000 ?   '#084594' :
+                                d > 2500000 ?   '#2171b5' :
+                                d > 1000000 ?   '#4292c6' :
+                                d > 500000  ?   '#6baed6' :
+                                d > 250000  ?   '#9ecae1' :
+                                d > 100000  ?   '#c6dbef' :
+                            //  d > 50000   ?   '#deebf7' :
+                                                '#f7fbff';
             }
 
             function style(feature) {
@@ -487,7 +479,7 @@ ds.fetch({
                 return div;
             };
             //legend.addTo(map);
-        })
+        });
 
 
          initFilters();
