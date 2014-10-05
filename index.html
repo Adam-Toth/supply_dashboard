@@ -51,7 +51,10 @@
   </head>
   <body>
 
+  <!-- Loading screen -->
   <div class="loader"></div>
+
+  <!-- design page layout with bootsrap -->
 
     <div style="display: block; text-align:center" class="container" id="dashboard">
         <h1><strong>Iraq Supply Pipeline</strong></h1>
@@ -101,11 +104,13 @@
 
 <script>
 
+// loading screen code
   $(window).load(function() {
 
       $(".loader").fadeOut("slow");
   });
 
+//declaration of chart names and types
         var value_chart = dc.rowChart("#item_value");
         var proc_total_status_chart = dc.pieChart("#proc_total_status");
         var proc_total_target_chart = dc.rowChart("#proc_total_target");
@@ -113,6 +118,7 @@
         var itm_qty_chart = dc.rowChart("#itm_qty");
         var proc_trend_chart = dc.barChart("#proc_trend");
 
+// Miso dataset importing google spreadsheet by spreadsheet ID
         var ds = new Miso.Dataset({
             importer : Miso.Dataset.Importers.GoogleSpreadsheet,
             parser : Miso.Dataset.Parsers.GoogleSpreadsheet,
@@ -120,11 +126,12 @@
             worksheet : "1"
 });
 
+// declare array to be filled with data from Google spreadsheet
 ds.fetch({
     success : function() {
         var spreadsheetdata = [];
         this.each(function(row){ spreadsheetdata.push(row);});
-
+//create a goupped view of only location codes and values
         var groupped = this.groupBy("A1Code",["Value"]);
 
         groupped = groupped.where({columns: ["A1Code","Value"],
@@ -132,15 +139,17 @@ ds.fetch({
                 return row.A1Code != null;
             }
         });
-
+//create separate json from groupped view of locations and values
         var Location_json = groupped.toJSON();
 
+//formatting of numbers, dates
         var numberFormat = d3.format(",f");
         var dateFormat = d3.time.format("%Y-%m-%d");
         var monthNameFormat = d3.time.format("%B");
-        var monthNumberFormat = d3.time.format("%-m");
+//crossfilter data
         var cf = crossfilter(spreadsheetdata);
 
+//declare crossfilter dimensions to be used in charts
         cf.targetpop = cf.dimension(function (d) {
           return d.Target_Population;
         });
@@ -150,9 +159,7 @@ ds.fetch({
         cf.item = cf.dimension(function (d) {
           return d.Item;
         });
-        cf.source = cf.dimension(function (d) {
-          return d.Source;
-        });
+
         cf.status = cf.dimension(function (d) {
           return d.Status;
         });
@@ -160,16 +167,17 @@ ds.fetch({
             return d.Location;
         });
 
+//gruop by dimensions
         var targetpop = cf.targetpop.group();
         var op = cf.op.group();
         // var date = cf.date.group();
         var item = cf.item.group();
-        var source = cf.source.group();
         var status = cf.status.group();
         var location = cf.location.group();
 
         var all = cf.groupAll();
 
+//sum values by dimension
         var op_by_total = cf.op.group().reduceSum(function (d) {
             return d.Value;
         });
@@ -177,13 +185,15 @@ ds.fetch({
         var item_total_quantity = cf.item.group().reduceSum(function (d) {
             return d.Quantity;
         });
+
         var status_by_total = cf.status.group().reduceSum(function (d) {
             return d.Value;
         });
+
         var item_total_value = cf.item.group().reduceSum(function (d) {
             return d.Value;
-
         });
+
         var targetpop_by_total = cf.targetpop.group().reduceSum(function (d) {
             return d.Value;
         });
@@ -192,18 +202,22 @@ ds.fetch({
             return d.Value;
         });
 
+//parse date from data array
         var parseDate = d3.time.format("%Y-%m-%d").parse;
         spreadsheetdata.forEach(function(d) {
             d.date = parseDate(d.Date);
             d.month = d3.time.month(d.date);
         });
 
+//create date dimension by month
         var datedimension = cf.dimension(function(d) {return (d.month);});
 
+//remove values where date is empty
         datedimension.filter("");
         cf.remove();
         datedimension.filterAll();
 
+//sum values by date and calculate minimum and maximum dates in the dataset
         var value_by_date = datedimension.group().reduceSum(function(d) {return(d.Value);});
         var minDate = datedimension.bottom(1)[0].date;
         var maxDate = datedimension.top(1)[0].date;
@@ -262,6 +276,7 @@ ds.fetch({
               .html(function (d) {
                   return "<span style='color: #fff'>" + d.key + "</span> : " + numberFormat(d.value);
               });
+      // tooltips for piechart
 
       var pieTip = d3.tip()
               .attr('class', 'd3-tip')
@@ -269,6 +284,7 @@ ds.fetch({
               .html(function (d) {
                   return "<span style='color: #fff'>" + d.data.key + "</span> : " + numberFormat(d.value);
               });
+      // tooltip for bar chart (not used)
       var barTip = d3.tip()
               .attr('class', 'd3-tip')
               .offset([-10, 0])
@@ -276,6 +292,7 @@ ds.fetch({
                   return "<span style='color: #fff'>" +  monthNameFormat(d.key) + "</span> : "  + numberFormat(d.value) + " USD";
               });
 
+// Item value chart
       value_chart.width(400).height(485)
                 .dimension(cf.item)
                 .group(item_total_value  = item_total_value || 0)
@@ -285,6 +302,7 @@ ds.fetch({
                 .on("filtered", getFiltersValues)
                 .xAxis().ticks(6).tickFormat(d3.format("$,s"));
 
+// Status chart
       proc_total_status_chart.width(300).height(200)
                 .dimension(cf.status)
                 .group(status_by_total  = status_by_total || 0)
@@ -297,6 +315,7 @@ ds.fetch({
                 .renderTitle(false)
                 .on("filtered", getFiltersValues);
 
+// Target population chart
       proc_total_target_chart.width(300).height(120)
                 .dimension(cf.targetpop)
                 .group(targetpop_by_total  = targetpop_by_total || 0)
@@ -306,6 +325,7 @@ ds.fetch({
                 .on("filtered", getFiltersValues)
                 .xAxis().ticks(4).tickFormat(d3.format("$,s"));
 
+// Operation chart
       proc_total_op.width(300).height(90)
                 .dimension(cf.op)
                 .group(op_by_total = op_by_total || 0)
@@ -314,7 +334,8 @@ ds.fetch({
                 .renderTitle(false)
                 .on("filtered", getFiltersValues)
                 .xAxis().ticks(4).tickFormat(d3.format("$,s"));
-			
+
+// Item quantity chart
 	  itm_qty_chart.width(400).height(485)
                 .dimension(cf.item)
                 .on("filtered", getFiltersValues)
@@ -324,6 +345,7 @@ ds.fetch({
                 .renderLabel(true)
                 .xAxis().ticks(6).tickFormat(d3.format("s"));
 
+// Timeline bar chart
       proc_trend_chart
                 .height(300)
                 .width(600)
@@ -332,34 +354,37 @@ ds.fetch({
                 .group(value_by_date)
                 // .renderTitle(true)
                 .title(function (d) { return monthNameFormat(d.key) + ": " + numberFormat(d.value); })
+// define scale based on minimum and maximum dates
                 .x(d3.time.scale().domain([minDate,maxDate]))
-                //.x(d3.time.scale().domain(d3.extent(data, function(d) { return d.Date; })))
                 .xUnits(d3.time.months)
-               // .xUnits(function(){return 20;})
                 .on("filtered", getFiltersValues)
                 .brushOn(true)
                 // .gap(10)
                 .elasticY(false)
+
+// rotate and move X axis labels
                 .renderlet(function (chart) {
                 chart.selectAll("g.x text")
                      .attr('dx', '-30')
                      .attr('transform', "rotate(-45)");
                       })
                 .margins({left: 70 ,top: 10, bottom: 50, right: 50})
-                .yAxis().ticks(7).tickFormat(d3.format("$,s"))
+                .yAxis().ticks(7).tickFormat(d3.format("$,s"));
 
 
         //Map
+        //Import admin level 1 geojson
         d3.json("data/admin1.geojson", function(json) {
 
+// extend admin level 1 map geojson features with values, paired by location code that appears on both the map and the dataset
             for (var i = 0; i < Location_json.length; i++) {
                 var dist_Location = Location_json[i].A1Code;
                 var dist_Value = parseFloat(Location_json[i].Value);
 
                 for (var j = 0; j < json.features.length; j++) {
-                    var jsonState = json.features[j].properties.A1Code;
+                    var jsonGov = json.features[j].properties.A1Code;
 
-                    if (dist_Location == jsonState) {
+                    if (dist_Location == jsonGov) {
                         json.features[j].properties.Value = dist_Value;
                         break;
 
@@ -369,11 +394,14 @@ ds.fetch({
 
             var geojson;
 
+            // declare leaflet map with an empty tile layer
             var map = L.map('map', { zoomControl: false }).setView([33.15, 43.8], 6);
             L.tileLayer('', {
                 attribution: "This map does not imply official endorsement or acceptance by the United Nations"
             })
                     .addTo(map);
+
+            // disable map user interaction including dragging, zoom, clicking, keyboard, etc.
             map.dragging.disable();
             map.touchZoom.disable();
             map.doubleClickZoom.disable();
@@ -390,6 +418,7 @@ ds.fetch({
                 return this._div;
             };
 
+            // declare what to show in information control
             info.update = function (props) {
                 this._div.innerHTML = '<h4>Released Value</h4>' +  (props ?
                         '<b>' + props.A1NameEn + '</b><br />' + numberFormat(props.Value = props.Value || 0) + ' USD'
@@ -421,7 +450,7 @@ ds.fetch({
                     fillColor: getColor(feature.properties.Value)
                 };
             }
-
+            // highlight selected governorate
             function highlightFeature(e) {
                 var layer = e.target;
 
@@ -439,6 +468,7 @@ ds.fetch({
                 info.update(layer.feature.properties);
             }
 
+            // reset highlight back to normal
             function resetHighlight(e) {
                 geojson.resetStyle(e.target);
                 info.update();
@@ -447,16 +477,17 @@ ds.fetch({
             function onEachFeature(feature, layer) {
                 layer.on({
                     mouseover: highlightFeature,
-                    mouseout: resetHighlight,
+                    mouseout: resetHighlight
                 });
             }
 
+            // add style to geojson feature and add to map
             geojson = L.geoJson(json, {
                 style: style,
                 onEachFeature: onEachFeature
             }).addTo(map);
 
-
+// legend control (not used)
             var legend = L.control({position: 'bottomleft'});
 
             legend.onAdd = function (map) {
@@ -485,6 +516,7 @@ ds.fetch({
          initFilters();
       dc.renderAll();
 
+// select and call d3-tip for charts
       d3.selectAll("g.row").call(rowTip);
       d3.selectAll("g.row").on('mouseover', rowTip.show)
               .on('mouseout', rowTip.hide);
